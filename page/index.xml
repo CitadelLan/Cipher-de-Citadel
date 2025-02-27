@@ -2,34 +2,35 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
         <title>Pages on Cipher嵐</title>
-        <link>https://citadellan.github.io/Cipher-de-Citadel/page/</link>
+        <link>https://citadellan.github.io/page/</link>
         <description>Recent content in Pages on Cipher嵐</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
-        <copyright>CipherLan/Animaヰ</copyright>
-        <lastBuildDate>Tue, 28 May 2019 00:00:00 +0000</lastBuildDate><atom:link href="https://citadellan.github.io/Cipher-de-Citadel/page/index.xml" rel="self" type="application/rss+xml" /><item>
+        <copyright>Cipher嵐/Animaヰ</copyright>
+        <lastBuildDate>Tue, 28 May 2019 00:00:00 +0000</lastBuildDate><atom:link href="https://citadellan.github.io/page/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>档案库</title>
-        <link>https://citadellan.github.io/Cipher-de-Citadel/archives/</link>
+        <link>https://citadellan.github.io/archives/</link>
         <pubDate>Tue, 28 May 2019 00:00:00 +0000</pubDate>
         
-        <guid>https://citadellan.github.io/Cipher-de-Citadel/archives/</guid>
+        <guid>https://citadellan.github.io/archives/</guid>
         <description></description>
         </item>
         <item>
         <title>关于</title>
-        <link>https://citadellan.github.io/Cipher-de-Citadel/about/</link>
+        <link>https://citadellan.github.io/about/</link>
         <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
         
-        <guid>https://citadellan.github.io/Cipher-de-Citadel/about/</guid>
-        <description>&lt;p&gt;This is a test page for i18n support.&lt;/p&gt;
+        <guid>https://citadellan.github.io/about/</guid>
+        <description>&lt;h2 id=&#34;我是谁&#34;&gt;我是谁？
+&lt;/h2&gt;&lt;p&gt;Cipher嵐&lt;/p&gt;
 </description>
         </item>
         <item>
         <title>链接</title>
-        <link>https://citadellan.github.io/Cipher-de-Citadel/links/</link>
+        <link>https://citadellan.github.io/links/</link>
         <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
         
-        <guid>https://citadellan.github.io/Cipher-de-Citadel/links/</guid>
+        <guid>https://citadellan.github.io/links/</guid>
         <description>&lt;p&gt;To use this feature, add &lt;code&gt;links&lt;/code&gt; section to frontmatter.&lt;/p&gt;
 &lt;p&gt;This page&amp;rsquo;s frontmatter:&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
@@ -61,10 +62,10 @@
         </item>
         <item>
         <title>搜索</title>
-        <link>https://citadellan.github.io/Cipher-de-Citadel/search/</link>
+        <link>https://citadellan.github.io/search/</link>
         <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
         
-        <guid>https://citadellan.github.io/Cipher-de-Citadel/search/</guid>
+        <guid>https://citadellan.github.io/search/</guid>
         <description></description>
         </item>
         
