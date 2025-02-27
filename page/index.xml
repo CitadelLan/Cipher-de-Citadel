@@ -7,7 +7,20 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>Cipher嵐/Animaヰ</copyright>
-        <lastBuildDate>Tue, 28 May 2019 00:00:00 +0000</lastBuildDate><atom:link href="https://citadellan.github.io/page/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Thu, 27 Feb 2025 17:17:51 +0800</lastBuildDate><atom:link href="https://citadellan.github.io/page/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>待办列表</title>
+        <link>https://citadellan.github.io/todos/</link>
+        <pubDate>Thu, 27 Feb 2025 17:17:51 +0800</pubDate>
+        
+        <guid>https://citadellan.github.io/todos/</guid>
+        <description>&lt;ol&gt;
+&lt;li&gt;评论系统&lt;/li&gt;
+&lt;li&gt;删除模板文档&lt;/li&gt;
+&lt;li&gt;添加老文档并进行部署&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+        </item>
+        <item>
         <title>档案库</title>
         <link>https://citadellan.github.io/archives/</link>
         <pubDate>Tue, 28 May 2019 00:00:00 +0000</pubDate>
