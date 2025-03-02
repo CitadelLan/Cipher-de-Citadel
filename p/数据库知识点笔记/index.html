@@ -391,8 +391,8 @@
 </h4><ul>
 <li>一般锁
 <ul>
-<li>共享锁：允许对数据\[行/表\]进行读，在数据\[行/表\]有共享锁时，无法申请排它锁（不允许写）</li>
-<li>排它锁：允许对数据\[行/表\]进行写（更新/删除），在数据\[行/表\]有排它锁时，无法申请共享锁、排它锁</li>
+<li>共享锁：允许对数据行/表进行读，在数据行/表有共享锁时，无法申请排它锁（不允许写）</li>
+<li>排它锁：允许对数据行/表进行写（更新/删除），在数据行/表有排它锁时，无法申请共享锁、排它锁</li>
 </ul>
 </li>
 <li>意向锁（意向锁一定为表锁）
@@ -477,9 +477,9 @@
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">select</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="k">update</span><span class="p">;</span><span class="w">    
 </span></span></span><span class="line"><span class="cl"><span class="w">                                            </span><span class="k">select</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="k">update</span><span class="p">;</span><span class="w">
 </span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">update</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="k">set</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Cipher&#39;</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w">  
-</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">等待</span><span class="n">session2的第一句的排它锁释放</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                                            </span><span class="k">update</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="k">set</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Anima&#39;</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">
-</span></span></span><span class="line"><span class="cl"><span class="w">                                            </span><span class="err">等待</span><span class="n">session1的第一句的排它锁释放</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">&lt;!</span><span class="c1">-- 等待session2的第一句的排它锁释放 --&gt;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="w">                                            </span><span class="k">update</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="k">set</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Anima&#39;</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                                            </span><span class="o">&lt;!</span><span class="c1">-- 等待session1的第一句的排它锁释放 --&gt;
 </span></span></span></code></pre></td></tr></table>
 </div>
 </div><p>如果上面两个事务都不提交，则两个事务各自成功申请的申请的的排它锁就不会释放（session1-&gt;id=1的排它锁，session2-&gt;id=2的排它锁）就会相互等待对方的排它锁释放，从而卡住</p>
