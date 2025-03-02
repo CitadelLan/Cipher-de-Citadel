@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="数据库并发 数据库事务 事务的四大特性/ACID: A/原子性：单个事务执行期间不可只执行部分操作，即一个事务只会完成或不完成其中所有操作，若操作期间出错则回滚该事物已经进行的操作 C/一致性：事务进行前、结束后，数据库完整性不被破坏。例如A向B转账，A一定会扣钱，B一定会得到等量的钱，不允许A扣钱数量与B得到钱的数量不一致 I/隔离性（操作语句的原子性）：事务在执行某一操作时（可以理解为执行某一条SQL语句时），其他事务不可对这一事务相关的数据进行操作 D/持久性：事务提交后，这一事务对数据的改变是永久的 数据库并发情境下的问题 不可重复读：一个事务读取到了同一个变量在经其他事务修改前后，值不一致的情况。例如A对变量var进行修改，B前后读取var的值是不一样的 幻影读：对于同一限定范围的数据，一个事务只负责读，另一事物往其中添加数据。这使得读方每次查询得到的数据数量不同 不可重复读和幻影读是很类似的情形，两者在数据的查询范围上有所不同：\n">
+<title>数据库知识点笔记</title>
+
+<link rel='canonical' href='https://citadellan.github.io/p/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9F%A5%E8%AF%86%E7%82%B9%E7%AC%94%E8%AE%B0/'>
+
+<link rel="stylesheet" href="/scss/style.min.663803bebe609202d5b39d848f2d7c2dc8b598a2d879efa079fa88893d29c49c.css"><meta property='og:title' content="数据库知识点笔记">
+<meta property='og:description' content="数据库并发 数据库事务 事务的四大特性/ACID: A/原子性：单个事务执行期间不可只执行部分操作，即一个事务只会完成或不完成其中所有操作，若操作期间出错则回滚该事物已经进行的操作 C/一致性：事务进行前、结束后，数据库完整性不被破坏。例如A向B转账，A一定会扣钱，B一定会得到等量的钱，不允许A扣钱数量与B得到钱的数量不一致 I/隔离性（操作语句的原子性）：事务在执行某一操作时（可以理解为执行某一条SQL语句时），其他事务不可对这一事务相关的数据进行操作 D/持久性：事务提交后，这一事务对数据的改变是永久的 数据库并发情境下的问题 不可重复读：一个事务读取到了同一个变量在经其他事务修改前后，值不一致的情况。例如A对变量var进行修改，B前后读取var的值是不一样的 幻影读：对于同一限定范围的数据，一个事务只负责读，另一事物往其中添加数据。这使得读方每次查询得到的数据数量不同 不可重复读和幻影读是很类似的情形，两者在数据的查询范围上有所不同：\n">
+<meta property='og:url' content='https://citadellan.github.io/p/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9F%A5%E8%AF%86%E7%82%B9%E7%AC%94%E8%AE%B0/'>
+<meta property='og:site_name' content='Cipher嵐'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-03-02T14:14:55&#43;08:00'/><meta property='article:modified_time' content='2025-03-02T14:14:55&#43;08:00'/>
+<meta name="twitter:title" content="数据库知识点笔记">
+<meta name="twitter:description" content="数据库并发 数据库事务 事务的四大特性/ACID: A/原子性：单个事务执行期间不可只执行部分操作，即一个事务只会完成或不完成其中所有操作，若操作期间出错则回滚该事物已经进行的操作 C/一致性：事务进行前、结束后，数据库完整性不被破坏。例如A向B转账，A一定会扣钱，B一定会得到等量的钱，不允许A扣钱数量与B得到钱的数量不一致 I/隔离性（操作语句的原子性）：事务在执行某一操作时（可以理解为执行某一条SQL语句时），其他事务不可对这一事务相关的数据进行操作 D/持久性：事务提交后，这一事务对数据的改变是永久的 数据库并发情境下的问题 不可重复读：一个事务读取到了同一个变量在经其他事务修改前后，值不一致的情况。例如A对变量var进行修改，B前后读取var的值是不一样的 幻影读：对于同一限定范围的数据，一个事务只负责读，另一事物往其中添加数据。这使得读方每次查询得到的数据数量不同 不可重复读和幻影读是很类似的情形，两者在数据的查询范围上有所不同：\n">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/BP2025_hu15562317645219116430.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Cipher嵐</a></h1>
+            <h2 class="site-description">Into the breach</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/3309261'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/CitadelLan'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>档案库</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>搜索</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>链接</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#数据库并发">数据库并发</a>
+      <ol>
+        <li><a href="#数据库事务">数据库事务</a>
+          <ol>
+            <li><a href="#事务的四大特性acid">事务的四大特性/ACID:</a></li>
+          </ol>
+        </li>
+        <li><a href="#数据库并发情境下的问题">数据库并发情境下的问题</a></li>
+        <li><a href="#数据库并发问题的解决方案">数据库并发问题的解决方案</a>
+          <ol>
+            <li><a href="#数据库隔离级别">数据库隔离级别</a></li>
+            <li><a href="#数据库锁机制">数据库锁机制</a></li>
+            <li><a href="#锁类型">锁类型</a></li>
+            <li><a href="#死锁两个事务不提交由于锁机制导致的两边事务互卡">死锁：两个事务不提交，由于锁机制导致的两边事务互卡</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9F%A5%E8%AF%86%E7%82%B9%E7%AC%94%E8%AE%B0/">数据库知识点笔记</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Feb 27, 20255</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 5 分钟
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="数据库并发">数据库并发
+</h2><h3 id="数据库事务">数据库事务
+</h3><h4 id="事务的四大特性acid">事务的四大特性/ACID:
+</h4><ol>
+<li>A/原子性：单个事务执行期间不可只执行部分操作，即一个事务只会完成或不完成其中所有操作，若操作期间出错则回滚该事物已经进行的操作</li>
+<li>C/一致性：事务进行前、结束后，数据库完整性不被破坏。例如A向B转账，A一定会扣钱，B一定会得到等量的钱，不允许A扣钱数量与B得到钱的数量不一致</li>
+<li>I/隔离性（操作语句的原子性）：事务在执行某一操作时（可以理解为执行某一条SQL语句时），其他事务不可对这一事务相关的数据进行操作</li>
+<li>D/持久性：事务提交后，这一事务对数据的改变是永久的</li>
+</ol>
+<h3 id="数据库并发情境下的问题">数据库并发情境下的问题
+</h3><ol>
+<li>不可重复读：一个事务读取到了同一个变量在经其他事务修改前后，值不一致的情况。例如A对变量var进行修改，B前后读取var的值是不一样的</li>
+<li>幻影读：对于同一限定范围的数据，一个事务只负责读，另一事物往其中添加数据。这使得读方每次查询得到的数据数量不同</li>
+</ol>
+<blockquote>
+<p>不可重复读和幻影读是很类似的情形，两者在数据的查询范围上有所不同：</p>
+<ul>
+<li>不可重复读针对的是单个数据的值</li>
+<li>幻影读针对的是一个范围的数据的总数</li>
+</ul>
+</blockquote>
+<ol start="3">
+<li>脏读：读取到了被回滚前的数据（脏数据）。例如B读取到缓存中由A进行的修改操作后（该修改还未提交），A又回滚了该操作，与数据库中的实际值不同。</li>
+<li>丢弃修改：两个事务先后修改一个值，前者读取到了后者修改的数据，与自己的修改值不一致</li>
+</ol>
+<h3 id="数据库并发问题的解决方案">数据库并发问题的解决方案
+</h3><h4 id="数据库隔离级别">数据库隔离级别
+</h4><ol>
+<li>未提交读：相当于没有隔离，未提交的修改对其他事务可见</li>
+<li>提交读：<strong>仅提交的修改</strong>对其他事务可见，避免了脏读</li>
+</ol>
+<blockquote>
+<p>数据被修改，但未被提交，则该数据不会对其他事务可见，即使此时回滚也不会影响其他事务读取到该数据的结果</p>
+</blockquote>
+<ol start="3">
+<li>重复读：<strong>已有数据</strong>被读取期间，其他事务不可修改<strong>已有的部分</strong>，但允许其他事务插入记录，避免脏读和不可重复读</li>
+<li>串行化读：有<strong>数据</strong>被读取期间，其他事务不可修改该<strong>数据</strong></li>
+</ol>
+<h4 id="数据库锁机制">数据库锁机制
+</h4><h4 id="锁类型">锁类型
+</h4><ul>
+<li>一般锁
+<ul>
+<li>共享锁：允许对数据\[行/表\]进行读，在数据\[行/表\]有共享锁时，无法申请排它锁（不允许写）</li>
+<li>排它锁：允许对数据\[行/表\]进行写（更新/删除），在数据\[行/表\]有排它锁时，无法申请共享锁、排它锁</li>
+</ul>
+</li>
+<li>意向锁（意向锁一定为表锁）
+<blockquote>
+<p>意向锁的出现是为了表示该表目前有一部分行有共享锁/排它锁，是一种以偏概全的表示形式。</p>
+<p>在向某些行申请共享锁/排它锁时，会先向数据所在表申请对应的意向共享锁/排它锁</p>
+<p>例：要对表中id=6的数据加排它锁前，系统会先向这个表申请意向排它锁</p>
+</blockquote>
+<ul>
+<li>意向共享锁：意向共享锁代表了目前需要向表中部分行加上共享锁，如果该表已经加有排他锁，则意向共享锁的申请会被阻塞直至排它锁解除</li>
+<li>意向排它锁：意向排它锁代表了目前需要向表中部分行加上排他锁，如果该表已经加有共享锁/排他锁，则意向排它锁的申请会被阻塞直至这一非共享锁解除</li>
+</ul>
+</li>
+</ul>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th style="text-align: center">锁</th>
+          <th style="text-align: center">共享锁 S</th>
+          <th style="text-align: center">排它锁 X</th>
+          <th style="text-align: center">意向共享锁 IS</th>
+          <th style="text-align: center">意向排它锁 IX</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: center">共享锁 S</td>
+          <td style="text-align: center">√</td>
+          <td style="text-align: center">×</td>
+          <td style="text-align: center">√</td>
+          <td style="text-align: center">×</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">排它锁 X</td>
+          <td style="text-align: center">×</td>
+          <td style="text-align: center">×</td>
+          <td style="text-align: center">×</td>
+          <td style="text-align: center">×</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">意向共享锁 IS</td>
+          <td style="text-align: center">√</td>
+          <td style="text-align: center">×</td>
+          <td style="text-align: center">√</td>
+          <td style="text-align: center">√</td>
+      </tr>
+      <tr>
+          <td style="text-align: center">意向排它锁 IX</td>
+          <td style="text-align: center">×</td>
+          <td style="text-align: center">×</td>
+          <td style="text-align: center">√</td>
+          <td style="text-align: center">√</td>
+      </tr>
+  </tbody>
+</table></div>
+<h4 id="死锁两个事务不提交由于锁机制导致的两边事务互卡">死锁：两个事务不提交，由于锁机制导致的两边事务互卡
+</h4><ul>
+<li>
+<p>死锁的产生</p>
+<ul>
+<li>
+<p>条件</p>
+<ol>
+<li>互斥条件：资源被进程排他地占用。进程要求对所分配的资源（如打印机）进行排他性控制，即在一段时间内某资源仅为一个进程所占有。此时若有其他进程请求该资源，则请求进程只能等待。</li>
+<li>保持并等待条件：进程已经保持了至少一个资源，但又提出了新的资源请求，而该资源已被其他进程占有，此时请求进程被阻塞，但对自己已获得的资源保持不放。</li>
+<li>不可剥夺条件：进程所获得的资源在未使用完毕之前，不能被其他进程强行夺走，即只能由获得该资源的进程自己来释放。</li>
+<li>循环等待条件：存在一种进程资源的循环等待链，链中每一个进程已获得的资源同时被链中下一个进程所请求。</li>
+</ol>
+<p>举个例子：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">session</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">:</span><span class="w">                                 </span><span class="k">session</span><span class="w"> </span><span class="mi">2</span><span class="err">：</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">select</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="k">update</span><span class="p">;</span><span class="w">    
+</span></span></span><span class="line"><span class="cl"><span class="w">                                            </span><span class="k">select</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="k">update</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">update</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="k">set</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Cipher&#39;</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w">  
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">等待</span><span class="n">session2的第一句的排它锁释放</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                                            </span><span class="k">update</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="k">set</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;Anima&#39;</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">                                            </span><span class="err">等待</span><span class="n">session1的第一句的排它锁释放</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>如果上面两个事务都不提交，则两个事务各自成功申请的申请的的排它锁就不会释放（session1-&gt;id=1的排它锁，session2-&gt;id=2的排它锁）就会相互等待对方的排它锁释放，从而卡住</p>
+</li>
+</ul>
+</li>
+<li>
+<p>MySQL的死锁解决方案</p>
+<ul>
+<li>锁超时：一个事务长时间无法获取锁的时候，主动放弃等待（取消事务），但超时阈值难以确定
+<ul>
+<li>阈值太短，容易将一些需要稍等一段时间才可以获取到锁的事务提前取消，然后回滚，之后再重新获取锁。这一操作是没有意义的，造成了性能浪费</li>
+<li>阈值太长，容易卡住太多的事务，使得这一数据库给人感觉反应不够快</li>
+</ul>
+</li>
+<li>死锁检测：采用wait-for graph算法
+<ul>
+<li>每个锁被什么事务持有（锁的信息链表），被阻塞的事务在等待什么锁（事务等待链表）。</li>
+<li>每当一个事务需要阻塞等待某个锁时，就会触发一次wait-for graph算法
+<ul>
+<li>从「锁的信息链表」中尝试寻找该锁，如果存在，则查找被哪个事务所持有</li>
+<li>根据上一步找到的的事务，在「事务等待链表」中进行查找，看看持有锁的事务是否在等待获取其他锁，如果是，则再去看看另一个持有锁的事务，是否在等待其他锁&hellip;..，经过一系列的判断后，再看看是否会出现闭环</li>
+<li>如果出现了闭环，MySQL会选择回滚量最小的事务，如果有回滚量最小的事务不止一个，则回滚其中一个，这一选择需要根据策略的选择来决定（随机、事务ID、优先级）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+        2025 Cipher嵐/Animaヰ
+    </section>
+    
+    <section class="powerby">
+        使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
+        主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.30.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
