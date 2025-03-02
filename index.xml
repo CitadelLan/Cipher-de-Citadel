@@ -9,10 +9,10 @@
         <copyright>Cipher嵐/Animaヰ</copyright>
         <lastBuildDate>Sun, 02 Mar 2025 14:14:55 +0800</lastBuildDate><atom:link href="https://citadellan.github.io/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>数据库知识点笔记</title>
-        <link>https://citadellan.github.io/p/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9F%A5%E8%AF%86%E7%82%B9%E7%AC%94%E8%AE%B0/</link>
+        <link>https://citadellan.github.io/database/</link>
         <pubDate>Sun, 02 Mar 2025 14:14:55 +0800</pubDate>
         
-        <guid>https://citadellan.github.io/p/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9F%A5%E8%AF%86%E7%82%B9%E7%AC%94%E8%AE%B0/</guid>
+        <guid>https://citadellan.github.io/database/</guid>
         <description>&lt;h2 id=&#34;数据库并发&#34;&gt;数据库并发
 &lt;/h2&gt;&lt;h3 id=&#34;数据库事务&#34;&gt;数据库事务
 &lt;/h3&gt;&lt;h4 id=&#34;事务的四大特性acid&#34;&gt;事务的四大特性/ACID:
