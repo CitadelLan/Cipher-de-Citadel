@@ -13,7 +13,81 @@
         <pubDate>Sun, 02 Mar 2025 14:14:55 +0800</pubDate>
         
         <guid>https://citadellan.github.io/database/</guid>
-        <description>&lt;h2 id=&#34;数据库并发&#34;&gt;数据库并发
+        <description>&lt;h2 id=&#34;数据库分类&#34;&gt;数据库分类
+&lt;/h2&gt;&lt;h3 id=&#34;关系型数据库&#34;&gt;关系型数据库
+&lt;/h3&gt;&lt;p&gt;关系型数据库中，&lt;code&gt;数据 == 一系列（表 == 一组列/行）&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;+ 支持事务，满足ACID原则&lt;/li&gt;
+&lt;li&gt;+ 支持复杂查询、事务&lt;/li&gt;
+&lt;li&gt;+ 数据更新的成本相对较低&lt;/li&gt;
+&lt;li&gt;+ 支持JOIN查询，允许同时显示多表查询的结果&lt;/li&gt;
+&lt;li&gt;- 扩展性不足
+&lt;ul&gt;
+&lt;li&gt;当表的字段数量产生改变时，整个表的存储结构就会发生变化，这就需要对原来的表的数据进行迁移与增删，这一操作复杂性高&lt;/li&gt;
+&lt;li&gt;如果将数据放在一台服务器上，则由于单个服务器的容量有限，随着数据量增大，容易达到单台服务器的瓶颈&lt;/li&gt;
+&lt;li&gt;如果将数据分布到多个服务器，则需要考虑多台服务器间的一致性问题，而该问题通常极其棘手&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;- 对大批量数据的查询效率底下&lt;/li&gt;
+&lt;li&gt;- 不支持非结构化数据&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;非关系型数据库&#34;&gt;非关系型数据库
+&lt;/h3&gt;&lt;p&gt;非关系型数据库的存储形式多样，其中：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Key-Value DB：&lt;code&gt;数据 == 一系列k-v对&lt;/code&gt;（Redis）
+&lt;ul&gt;
+&lt;li&gt;+ 查询快&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Document DB：&lt;code&gt;数据 == 文档（一般为json）&lt;/code&gt;（MongoDB）
+&lt;ul&gt;
+&lt;li&gt;+ 适用于架构无法定义/频繁更改的非结构化数据&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Columnar DB：将原来关系数据库中的行以列的形式存储
+&lt;ul&gt;
+&lt;li&gt;+ 可以更快访问列数据，适用于数据分析&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;Graph DB：数据存储在节点中，节点间关系存储在边上
+&lt;ul&gt;
+&lt;li&gt;+ 更快的复杂关系查询&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;由于非关系型数据库支持非结构化数据的存储，也带来了以下特点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;+ 数据模型更加灵活，不需要像关系型数据库中一样进行大量的相同内容的数据迁移&lt;/li&gt;
+&lt;li&gt;+ 更好的可扩展性，上一条已经解释了原因，而这一性质更契合分布式存储&lt;/li&gt;
+&lt;li&gt;+ 处理大规模数据、高并发访问效率更高（由于分布式存储）&lt;/li&gt;
+&lt;li&gt;- 缺乏事务支持&lt;/li&gt;
+&lt;li&gt;- 数据一致性差&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;mysql&#34;&gt;MySQL
+&lt;/h2&gt;&lt;h3 id=&#34;数据库操作&#34;&gt;数据库操作
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;Drop：删除整个表&lt;/li&gt;
+&lt;li&gt;Truncate：删除表中所有数据&lt;/li&gt;
+&lt;li&gt;Delete：删除一部分/全部表数据，需要commit才可生效，可rollback&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;数据库操作优化&#34;&gt;数据库操作优化
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;尽可能避免使用&lt;code&gt;select *&lt;/code&gt;
+&lt;ul&gt;
+&lt;li&gt;查询出一些可能不需要的字段，即磁盘IO时产生了资源浪费&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;为搜索字段创建索引&lt;/li&gt;
+&lt;li&gt;垂直分割分表
+&lt;ul&gt;
+&lt;li&gt;定义：将一个表中的列根据功能或使用频率等原则拆分为多个表。每个子表只包含原表中的部分列，通过主键或唯一索引关联各个子表。&lt;/li&gt;
+&lt;li&gt;通过分割行为，得到了多张宽度更小的表，在查询时的表更小，冗余的IO更少&lt;/li&gt;
+&lt;li&gt;分离冷/热数据：使用频率低/高的数据，减少冗余IO&lt;/li&gt;
+&lt;li&gt;更小的表宽度意味着一页可以存储的表中数据更多，更容易命中缓存&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;数据库并发&#34;&gt;数据库并发
 &lt;/h2&gt;&lt;h3 id=&#34;数据库事务&#34;&gt;数据库事务
 &lt;/h3&gt;&lt;h4 id=&#34;事务的四大特性acid&#34;&gt;事务的四大特性/ACID:
 &lt;/h4&gt;&lt;ol&gt;
@@ -24,8 +98,8 @@
 &lt;/ol&gt;
 &lt;h3 id=&#34;数据库并发情境下的问题&#34;&gt;数据库并发情境下的问题
 &lt;/h3&gt;&lt;ol&gt;
-&lt;li&gt;不可重复读：一个事务读取到了同一个变量在经其他事务修改前后，值不一致的情况。例如A对变量var进行修改，B前后读取var的值是不一样的&lt;/li&gt;
-&lt;li&gt;幻影读：对于同一限定范围的数据，一个事务只负责读，另一事物往其中添加数据。这使得读方每次查询得到的数据数量不同&lt;/li&gt;
+&lt;li&gt;不可重复读/前后读不一致：一个事务读取到了同一个变量在经其他事务修改前后，值不一致的情况。例如A对变量var进行修改，B前后读取var的值是不一样的&lt;/li&gt;
+&lt;li&gt;幻影读/前后范围读不一致：对于同一限定范围的数据，一个事务只负责读，另一事物往其中添加数据。这使得读方每次查询得到的数据数量不同&lt;/li&gt;
 &lt;/ol&gt;
 &lt;blockquote&gt;
 &lt;p&gt;不可重复读和幻影读是很类似的情形，两者在数据的查询范围上有所不同：&lt;/p&gt;
@@ -35,8 +109,8 @@
 &lt;/ul&gt;
 &lt;/blockquote&gt;
 &lt;ol start=&#34;3&#34;&gt;
-&lt;li&gt;脏读：读取到了被回滚前的数据（脏数据）。例如B读取到缓存中由A进行的修改操作后（该修改还未提交），A又回滚了该操作，与数据库中的实际值不同。&lt;/li&gt;
-&lt;li&gt;丢弃修改：两个事务先后修改一个值，前者读取到了后者修改的数据，与自己的修改值不一致&lt;/li&gt;
+&lt;li&gt;脏读/读到被回滚数据：读取到了被回滚前的数据（脏数据）。例如B读取到缓存中由A进行的修改操作后（该修改还未提交），A又回滚了该操作，与数据库中的实际值不同。&lt;/li&gt;
+&lt;li&gt;丢弃修改/修改的数据被别人改了：两个事务先后修改一个值，前者读取到了后者修改的数据，与自己的修改值不一致&lt;/li&gt;
 &lt;/ol&gt;
 &lt;h3 id=&#34;数据库并发问题的解决方案&#34;&gt;数据库并发问题的解决方案
 &lt;/h3&gt;&lt;h4 id=&#34;数据库隔离级别&#34;&gt;数据库隔离级别
