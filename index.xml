@@ -63,6 +63,39 @@
 &lt;li&gt;- 缺乏事务支持&lt;/li&gt;
 &lt;li&gt;- 数据一致性差&lt;/li&gt;
 &lt;/ul&gt;
+&lt;h2 id=&#34;数据库索引&#34;&gt;数据库索引
+&lt;/h2&gt;&lt;h3 id=&#34;常用结构&#34;&gt;常用结构
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;HASH/哈希索引：对于单条查询而言快&lt;/li&gt;
+&lt;li&gt;BTREE/B+树索引：比起B树使用中序遍历达到遍历效果，B+树遍历更方便&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;常用类型&#34;&gt;常用类型
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;主键索引&lt;/li&gt;
+&lt;li&gt;普通索引&lt;/li&gt;
+&lt;li&gt;唯一索引&lt;/li&gt;
+&lt;li&gt;组合索引&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;覆盖索引&#34;&gt;覆盖索引
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;定义：索引包含所有待查询的字段值&lt;/li&gt;
+&lt;li&gt;对于非主键索引就可以查到的记录，则不再需要查询主键来搜索到结果&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;聚集索引&#34;&gt;聚集索引
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;聚集索引决定了表中数据的物理存储顺序，其叶子结点存储了实际的数据行，而非指向数据行的指针&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;非聚集索引&#34;&gt;非聚集索引
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;仅存储索引值以及指向数据行的指针&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;数据库键定义&#34;&gt;数据库键定义
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;超键：唯一表示元祖的属性集&lt;/li&gt;
+&lt;li&gt;候选键：不含多余属性的超键（在删除其中一个属性，不唯一）&lt;/li&gt;
+&lt;li&gt;主键：用户选作元组标识的一个候选键&lt;/li&gt;
+&lt;li&gt;外键：表内的某属性为其他表的主键&lt;/li&gt;
+&lt;/ul&gt;
 &lt;h2 id=&#34;mysql&#34;&gt;MySQL
 &lt;/h2&gt;&lt;h3 id=&#34;数据库操作&#34;&gt;数据库操作
 &lt;/h3&gt;&lt;ul&gt;
@@ -86,6 +119,27 @@
 &lt;li&gt;更小的表宽度意味着一页可以存储的表中数据更多，更容易命中缓存&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
+&lt;li&gt;使用合适的存储引擎&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;存储引擎&#34;&gt;存储引擎
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;InnoDB：
+&lt;ul&gt;
+&lt;li&gt;MySQL默认存储引擎&lt;/li&gt;
+&lt;li&gt;主索引为聚集索引（索引中保存了数据，从而不需要读取磁盘）&lt;/li&gt;
+&lt;li&gt;适合：需要事务支持、高并发处理和复杂查询的应用。&lt;/li&gt;
+&lt;li&gt;优点：支持MVCC（多版本并发控制），有良好的索引机制，性能稳定。&lt;/li&gt;
+&lt;li&gt;缺点：默认配置可能不够优化，资源消耗较高。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;MyISAM：
+&lt;ul&gt;
+&lt;li&gt;适合：对单一字段进行大量读写操作，或者应用规模较小且查询相对简单。&lt;/li&gt;
+&lt;li&gt;优点：性能较低时更优，单列优化效果好。&lt;/li&gt;
+&lt;li&gt;缺点：不支持事务和复杂查询优化。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&amp;hellip;&amp;hellip;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;数据库并发&#34;&gt;数据库并发
 &lt;/h2&gt;&lt;h3 id=&#34;数据库事务&#34;&gt;数据库事务
@@ -241,13 +295,18 @@
 &lt;ul&gt;
 &lt;li&gt;从「锁的信息链表」中尝试寻找该锁，如果存在，则查找被哪个事务所持有&lt;/li&gt;
 &lt;li&gt;根据上一步找到的的事务，在「事务等待链表」中进行查找，看看持有锁的事务是否在等待获取其他锁，如果是，则再去看看另一个持有锁的事务，是否在等待其他锁&amp;hellip;..，经过一系列的判断后，再看看是否会出现闭环&lt;/li&gt;
-&lt;li&gt;如果出现了闭环，MySQL会选择回滚量最小的事务，如果有回滚量最小的事务不止一个，则回滚其中一个，这一选择需要根据策略的选择来决定（这一点没有查到具体的策略，我能想到的会有：随机、根据事务ID选择、根据事务优先级选择）x&lt;/li&gt;
+&lt;li&gt;如果出现了闭环，MySQL会选择回滚量最小的事务，如果有回滚量最小的事务不止一个，则回滚其中一个，这一选择需要根据策略的选择来决定（这一点没有查到具体的策略，我能想到的会有：随机、根据事务ID选择、根据事务优先级选择）&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
+&lt;/ul&gt;
+&lt;h5 id=&#34;乐观锁与悲观锁&#34;&gt;乐观锁与悲观锁
+&lt;/h5&gt;&lt;ul&gt;
+&lt;li&gt;乐观锁：先进行业务操作，只在最后更新数据时再检查数据是否被更新过。&lt;/li&gt;
+&lt;li&gt;悲观锁：先加锁，再进行业务操作&lt;/li&gt;
 &lt;/ul&gt;
 </description>
         </item>
