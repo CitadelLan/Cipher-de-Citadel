@@ -63,6 +63,13 @@
 &lt;li&gt;- 缺乏事务支持&lt;/li&gt;
 &lt;li&gt;- 数据一致性差&lt;/li&gt;
 &lt;/ul&gt;
+&lt;h2 id=&#34;数据库键定义&#34;&gt;数据库键定义
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;超键：唯一表示元祖的属性集&lt;/li&gt;
+&lt;li&gt;候选键：不含多余属性的超键（在删除其中一个属性，不唯一）&lt;/li&gt;
+&lt;li&gt;主键：用户选作元组标识的一个候选键&lt;/li&gt;
+&lt;li&gt;外键：表内的某属性为其他表的主键&lt;/li&gt;
+&lt;/ul&gt;
 &lt;h2 id=&#34;数据库索引&#34;&gt;数据库索引
 &lt;/h2&gt;&lt;h3 id=&#34;常用结构&#34;&gt;常用结构
 &lt;/h3&gt;&lt;ul&gt;
@@ -88,58 +95,6 @@
 &lt;h3 id=&#34;非聚集索引&#34;&gt;非聚集索引
 &lt;/h3&gt;&lt;ul&gt;
 &lt;li&gt;仅存储索引值以及指向数据行的指针&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;数据库键定义&#34;&gt;数据库键定义
-&lt;/h2&gt;&lt;ul&gt;
-&lt;li&gt;超键：唯一表示元祖的属性集&lt;/li&gt;
-&lt;li&gt;候选键：不含多余属性的超键（在删除其中一个属性，不唯一）&lt;/li&gt;
-&lt;li&gt;主键：用户选作元组标识的一个候选键&lt;/li&gt;
-&lt;li&gt;外键：表内的某属性为其他表的主键&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;mysql&#34;&gt;MySQL
-&lt;/h2&gt;&lt;h3 id=&#34;数据库操作&#34;&gt;数据库操作
-&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;Drop：删除整个表&lt;/li&gt;
-&lt;li&gt;Truncate：删除表中所有数据&lt;/li&gt;
-&lt;li&gt;Delete：删除一部分/全部表数据，需要commit才可生效，可rollback&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;数据库操作优化&#34;&gt;数据库操作优化
-&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;尽可能避免使用&lt;code&gt;select *&lt;/code&gt;
-&lt;ul&gt;
-&lt;li&gt;查询出一些可能不需要的字段，即磁盘IO时产生了资源浪费&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;为搜索字段创建索引&lt;/li&gt;
-&lt;li&gt;垂直分割分表
-&lt;ul&gt;
-&lt;li&gt;定义：将一个表中的列根据功能或使用频率等原则拆分为多个表。每个子表只包含原表中的部分列，通过主键或唯一索引关联各个子表。&lt;/li&gt;
-&lt;li&gt;通过分割行为，得到了多张宽度更小的表，在查询时的表更小，冗余的IO更少&lt;/li&gt;
-&lt;li&gt;分离冷/热数据：使用频率低/高的数据，减少冗余IO&lt;/li&gt;
-&lt;li&gt;更小的表宽度意味着一页可以存储的表中数据更多，更容易命中缓存&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;使用合适的存储引擎&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;存储引擎&#34;&gt;存储引擎
-&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;InnoDB：
-&lt;ul&gt;
-&lt;li&gt;MySQL默认存储引擎&lt;/li&gt;
-&lt;li&gt;主索引为聚集索引（索引中保存了数据，从而不需要读取磁盘）&lt;/li&gt;
-&lt;li&gt;适合：需要事务支持、高并发处理和复杂查询的应用。&lt;/li&gt;
-&lt;li&gt;优点：支持MVCC（多版本并发控制），有良好的索引机制，性能稳定。&lt;/li&gt;
-&lt;li&gt;缺点：默认配置可能不够优化，资源消耗较高。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;MyISAM：
-&lt;ul&gt;
-&lt;li&gt;适合：对单一字段进行大量读写操作，或者应用规模较小且查询相对简单。&lt;/li&gt;
-&lt;li&gt;优点：性能较低时更优，单列优化效果好。&lt;/li&gt;
-&lt;li&gt;缺点：不支持事务和复杂查询优化。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;li&gt;&amp;hellip;&amp;hellip;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;数据库并发&#34;&gt;数据库并发
 &lt;/h2&gt;&lt;h3 id=&#34;数据库事务&#34;&gt;数据库事务
@@ -307,6 +262,75 @@
 &lt;/h5&gt;&lt;ul&gt;
 &lt;li&gt;乐观锁：先进行业务操作，只在最后更新数据时再检查数据是否被更新过。&lt;/li&gt;
 &lt;li&gt;悲观锁：先加锁，再进行业务操作&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;数据库设计要点&#34;&gt;数据库设计要点
+&lt;/h2&gt;&lt;h3 id=&#34;减少join操作&#34;&gt;减少JOIN操作
+&lt;/h3&gt;&lt;ol&gt;
+&lt;li&gt;性能考量
+&lt;ol&gt;
+&lt;li&gt;JOIN操作需要遍历多个表，花费时间长（尤其是在没有索引的情况下）&lt;/li&gt;
+&lt;li&gt;每次JOIN都需要创建临时结果表，占用内存空间&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;索引开销：索引不合适/无索引时会导致全表扫描&lt;/li&gt;
+&lt;li&gt;数据冗余：一个表与其他表多行数据匹配时，会有数据冗余。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;表A、B各有5条数据，条件为&lt;code&gt;A.name = B.name&lt;/code&gt;，恰好A里每一项name字段都为&lt;code&gt;Cipher&lt;/code&gt;，B里有两项为&lt;code&gt;Cipher&lt;/code&gt;，结果就会有十行数据，而其中数据冗余过多&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ol start=&#34;4&#34;&gt;
+&lt;li&gt;涉及到多表查询，就会有多表的锁管理问题，高并发情况下可能会导致死锁&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;主从复制读写分离&#34;&gt;主从复制+读写分离
+&lt;/h3&gt;&lt;h4 id=&#34;主从复制&#34;&gt;主从复制
+&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;读写分离&#34;&gt;读写分离
+&lt;/h4&gt;&lt;h2 id=&#34;mysql&#34;&gt;MySQL
+&lt;/h2&gt;&lt;h3 id=&#34;数据库操作&#34;&gt;数据库操作
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;Drop：删除整个表&lt;/li&gt;
+&lt;li&gt;Truncate：删除表中所有数据&lt;/li&gt;
+&lt;li&gt;Delete：删除一部分/全部表数据，需要commit才可生效，可rollback&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;数据库操作优化&#34;&gt;数据库操作优化
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;尽可能避免使用&lt;code&gt;select *&lt;/code&gt;
+&lt;ul&gt;
+&lt;li&gt;查询出一些可能不需要的字段，即磁盘IO时产生了资源浪费&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;为搜索字段创建索引&lt;/li&gt;
+&lt;li&gt;垂直分割分表
+&lt;ul&gt;
+&lt;li&gt;定义：将一个表中的列根据功能或使用频率等原则拆分为多个表。每个子表只包含原表中的部分列，通过主键或唯一索引关联各个子表。&lt;/li&gt;
+&lt;li&gt;通过分割行为，得到了多张宽度更小的表，在查询时的表更小，冗余的IO更少&lt;/li&gt;
+&lt;li&gt;分离冷/热数据：使用频率低/高的数据，减少冗余IO&lt;/li&gt;
+&lt;li&gt;更小的表宽度意味着一页可以存储的表中数据更多，更容易命中缓存&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;使用合适的存储引擎&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;存储引擎&#34;&gt;存储引擎
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;InnoDB：
+&lt;ul&gt;
+&lt;li&gt;MySQL默认存储引擎&lt;/li&gt;
+&lt;li&gt;主索引为聚集索引（索引中保存了数据，从而不需要读取磁盘）&lt;/li&gt;
+&lt;li&gt;适合：需要事务支持、高并发处理和复杂查询的应用。&lt;/li&gt;
+&lt;li&gt;优点：支持MVCC（多版本并发控制），有良好的索引机制，性能稳定。&lt;/li&gt;
+&lt;li&gt;缺点：默认配置可能不够优化，资源消耗较高。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;MyISAM：
+&lt;ul&gt;
+&lt;li&gt;适合：对单一字段进行大量读写操作，或者应用规模较小且查询相对简单。&lt;/li&gt;
+&lt;li&gt;优点：性能较低时更优，单列优化效果好。&lt;/li&gt;
+&lt;li&gt;缺点：不支持事务和复杂查询优化。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&amp;hellip;&amp;hellip;&lt;/li&gt;
 &lt;/ul&gt;
 </description>
         </item>
